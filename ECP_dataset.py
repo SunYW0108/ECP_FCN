@@ -13,7 +13,7 @@ from torch.utils import data
 class ECPClassSegBase(data.Dataset):
 
     class_names = np.array([
-        '111background',
+        'background',
         'aeroplane',
         'bicycle',
         'bird',

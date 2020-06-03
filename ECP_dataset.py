@@ -10,7 +10,7 @@ import torch
 from torch.utils import data
 
 
-class VOCClassSegBase(data.Dataset):
+class ECPClassSegBase(data.Dataset):
 
     class_names = np.array([
         'background',

@@ -12,7 +12,6 @@ import yaml
 
 import torchfcn
 import ECP_dataset
-import numpy as np
 
 def git_hash():
     cmd = 'git log -n 1 --pretty="%h"'
@@ -106,7 +105,7 @@ def main():
     dataset_test = ECP_dataset.Subset(dataset_test, indices[-20:])
 
     # define training and validation data loaders
-    loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=50, shuffle=True, **kwargs)
+    loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=2, shuffle=True, **kwargs)
     loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1, shuffle=False, **kwargs)
 
     # 2. model

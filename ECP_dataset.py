@@ -11,8 +11,8 @@ from torch.utils import data
 import transform
 
 # RGB color for each class
-colormap = [[0, 0, 0], [128, 128, 128], [0, 255, 0], [128, 255, 255], [0, 0, 255],
-            [255, 128, 0], [128, 0, 255], [255, 255, 0], [255, 0, 0]]
+colormap = [[0, 0, 0], [128, 128, 128], [0, 255, 0], [128, 255, 255],
+            [0, 0, 255],[255, 128, 0], [128, 0, 255], [255, 255, 0], [255, 0, 0]]
 
 colormap2label = np.zeros(256 ** 3)  # 每个像素点有 0 ~ 255 的选择，RGB 三个通道
 for i, cm in enumerate(colormap):
@@ -22,6 +22,16 @@ def image2label(im):
     data = np.array(im, dtype='int32')
     idx = (data[:, :, 0] * 256 + data[:, :, 1]) * 256 + data[:, :, 2]
     return np.array(colormap2label[idx], dtype='int64')  # 根据索引得到 label 矩阵
+
+def label2image(lbl):
+    i = lbl.shape[0]
+    j = lbl.shape[1]
+    rgblbl = np.zeros((i,j,3))
+    for index_i in range(i):
+        for index_j in range(j):
+            rgblbl[index_i, index_j, :] = colormap[lbl[index_i, index_j]]
+    return rgblbl
+
 
 class ECPDataset(data.Dataset):
 
@@ -102,6 +112,8 @@ class ECPDataset(data.Dataset):
         img = img.astype(np.uint8)
         img = img[:, :, ::-1]
         lbl = lbl.numpy()
+        #lbl从类别数恢复rgb颜色
+        #lbl = label2image(lbl)
         return img, lbl
 
 

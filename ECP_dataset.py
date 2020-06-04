@@ -103,3 +103,24 @@ class ECPDataset(data.Dataset):
         img = img[:, :, ::-1]
         lbl = lbl.numpy()
         return img, lbl
+
+
+class Subset(data.Dataset):
+    r"""
+    Subset of a dataset at specified indices.
+
+    Arguments:
+        dataset (Dataset): The whole Dataset
+        indices (sequence): Indices in the whole set selected for subset
+    """
+    def __init__(self, dataset, indices):
+        self.dataset = dataset
+        self.indices = indices
+        self.class_names=dataset.class_names
+        self.untransform = dataset.untransform
+
+    def __getitem__(self, idx):
+        return self.dataset[self.indices[idx]]
+
+    def __len__(self):
+        return len(self.indices)

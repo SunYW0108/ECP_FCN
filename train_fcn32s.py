@@ -102,8 +102,8 @@ def main():
 
     # split the dataset in train and test set
     indices = torch.randperm(len(dataset_train)).tolist()
-    dataset_train = torch.utils.data.Subset(dataset_train, indices[:-20])
-    dataset_test = torch.utils.data.Subset(dataset_test, indices[-20:])
+    dataset_train = ECP_dataset.Subset(dataset_train, indices[:-20])
+    dataset_test = ECP_dataset.Subset(dataset_test, indices[-20:])
 
     # define training and validation data loaders
     loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=50, shuffle=True, **kwargs)

@@ -9,6 +9,7 @@ from torchvision import transforms
 import torch
 import numpy as np
 
+
 def _get_image_size(img):
     if F._is_pil_image(img):
         return img.size
@@ -16,6 +17,7 @@ def _get_image_size(img):
         return img.shape[-2:][::-1]
     else:
         raise TypeError("Unexpected type {}".format(type(img)))
+
 
 # def label_to_one_hot(targets, n_class):
 #     """
@@ -34,32 +36,33 @@ def _get_image_size(img):
 #     return one_hot.float()
 
 
-# class Compose2(object):
-#     """Composes several transforms together.
-#     Args:
-#         transforms (list of ``Transform`` objects): list of transforms to compose.
-#     Example:
-#         >>> transforms.Compose([
-#         >>>     transforms.CenterCrop(10),
-#         >>>     transforms.ToTensor(),
-#         >>> ])
-#     """
-#
-#     def __init__(self, transforms):
-#         self.transforms = transforms
-#
-#     def __call__(self, img, target):
-#         for t in self.transforms:
-#             img, target = t(img, target)
-#         return img, target
-#
-#     def __repr__(self):
-#         format_string = self.__class__.__name__ + '('
-#         for t in self.transforms:
-#             format_string += '\n'
-#             format_string += '    {0}'.format(t)
-#         format_string += '\n)'
-#         return format_string
+class Compose2(object):
+    """Composes several transforms together.
+    Args:
+        transforms (list of ``Transform`` objects): list of transforms to compose.
+    Example:
+        >>> transforms.Compose([
+        >>>     transforms.CenterCrop(10),
+        >>>     transforms.ToTensor(),
+        >>> ])
+    """
+
+    def __init__(self, transforms):
+        self.transforms = transforms
+
+    def __call__(self, img, lbl):
+        for t in self.transforms:
+            img, lbl = t(img, lbl)
+        return img, lbl
+
+    def __repr__(self):
+        format_string = self.__class__.__name__ + '('
+        for t in self.transforms:
+            format_string += '\n'
+            format_string += '    {0}'.format(t)
+        format_string += '\n)'
+        return format_string
+
 
 class RandomCrop(object):
     """Crop the given PIL Image at a random location.
@@ -96,6 +99,7 @@ class RandomCrop(object):
                 will result in [2, 1, 1, 2, 3, 4, 4, 3]
 
     """
+
     def __init__(self, size, padding=None, pad_if_needed=False, fill=0, padding_mode='constant'):
         if isinstance(size, numbers.Number):
             self.size = (int(size), int(size))
@@ -153,6 +157,7 @@ class RandomCrop(object):
     def __repr__(self):
         return self.__class__.__name__ + '(size={0}, padding={1})'.format(self.size, self.padding)
 
+
 class RandomHorizontalFlip(object):
     """Horizontally flip the given PIL Image randomly with a given probability.
     Args:
@@ -177,6 +182,7 @@ class RandomHorizontalFlip(object):
     def __repr__(self):
         return self.__class__.__name__ + '(p={})'.format(self.p)
 
+
 class Normalize(object):
     """Normalize a tensor image with mean and standard deviation.
     Given mean: ``(M1,...,Mn)`` and std: ``(S1,..,Sn)`` for ``n`` channels, this transform
@@ -192,12 +198,13 @@ class Normalize(object):
         inplace(bool,optional): Bool to make this operation in-place.
 
     """
+
     def __init__(self, mean, std, inplace=False):
         self.mean = mean
         self.std = std
         self.inplace = inplace
 
-    def __call__(self, img_tensor,lbl):
+    def __call__(self, img_tensor, lbl):
         """
         Args:
             tensor (Tensor): Tensor image of size (C, H, W) to be normalized.
@@ -205,10 +212,11 @@ class Normalize(object):
         Returns:
             Tensor: Normalized Tensor image.
         """
-        return F.normalize(img_tensor, self.mean, self.std, self.inplace),lbl
+        return F.normalize(img_tensor, self.mean, self.std, self.inplace), lbl
 
     def __repr__(self):
         return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
+
 
 class ToTensor(object):
     """Convert a ``PIL Image`` or ``numpy.ndarray`` to tensor.
@@ -221,7 +229,7 @@ class ToTensor(object):
     In the other cases, tensors are returned without scaling.
     """
 
-    def __call__(self, img,lbl):
+    def __call__(self, img, lbl):
         """
         Args:
             pic (PIL Image or numpy.ndarray): Image to be converted to tensor.
@@ -229,8 +237,8 @@ class ToTensor(object):
         Returns:
             Tensor: Converted image.
         """
-        img=F.to_tensor(img)
-        lbl=torch.from_numpy(np.array(lbl,dtype='int'))
+        img = F.to_tensor(img)
+        lbl = torch.from_numpy(np.array(lbl, dtype='int'))
 
         # # print(target.type())
         # zeros = torch.zeros(lbl.shape).long()
@@ -238,35 +246,36 @@ class ToTensor(object):
         # lbl = torch.where(lbl <= 20, lbl, zeros)
         # lbl = lbl.unsqueeze(dim=0)
 
-        return img,lbl
+        return img, lbl
 
     def __repr__(self):
         return self.__class__.__name__ + '()'
 
-    class CenterCrop(object):
-        """Crops the given PIL Image at the center.
 
-        Args:
-            size (sequence or int): Desired output size of the crop. If size is an
-                int instead of sequence like (h, w), a square crop (size, size) is
-                made.
+class CenterCrop(object):
+    """Crops the given PIL Image at the center.
+
+    Args:
+        size (sequence or int): Desired output size of the crop. If size is an
+            int instead of sequence like (h, w), a square crop (size, size) is
+            made.
+    """
+
+    def __init__(self, size):
+        if isinstance(size, numbers.Number):
+            self.size = (int(size), int(size))
+        else:
+            self.size = size
+
+    def __call__(self, img, lbl):
         """
+        Args:
+            img (PIL Image): Image to be cropped.
 
-        def __init__(self, size):
-            if isinstance(size, numbers.Number):
-                self.size = (int(size), int(size))
-            else:
-                self.size = size
+        Returns:
+            PIL Image: Cropped image.
+        """
+        return F.center_crop(img, self.size), F.center_crop(lbl, self.size)
 
-        def __call__(self, img,lbl):
-            """
-            Args:
-                img (PIL Image): Image to be cropped.
-
-            Returns:
-                PIL Image: Cropped image.
-            """
-            return F.center_crop(img, self.size),F.center_crop(lbl, self.size)
-
-        def __repr__(self):
-            return self.__class__.__name__ + '(size={0})'.format(self.size)
+    def __repr__(self):
+        return self.__class__.__name__ + '(size={0})'.format(self.size)

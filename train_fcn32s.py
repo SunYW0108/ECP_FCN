@@ -11,7 +11,7 @@ import torch
 import yaml
 
 import torchfcn
-
+import transform
 
 def git_hash():
     cmd = 'git log -n 1 --pretty="%h"'
@@ -95,7 +95,19 @@ def main():
     root = osp.expanduser('~/facade_datasets/2.ECP')
     kwargs = {'num_workers': 4, 'pin_memory': True} if cuda else {}
 
+    # use our dataset and defined transformations
+    dataset = ECPDataset(root, transform=True)
+    dataset_test = ECPDataset(root, transform=True)
 
+    # split the dataset in train and test set
+    indices = torch.randperm(len(dataset)).tolist()
+    dataset = torch.utils.data.Subset(dataset, indices[:-30])
+    dataset_test = torch.utils.data.Subset(dataset_test, indices[-30:])
+
+    # define training and validation data loaders
+    data_loader = torch.utils.data.DataLoader(dataset, batch_size=2, shuffle=True, num_workers=4)
+
+    data_loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1, shuffle=False, num_workers=4)
 
 
 

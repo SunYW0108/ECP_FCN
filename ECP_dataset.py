@@ -8,9 +8,8 @@ import PIL.Image
 import scipy.io
 import torch
 from torch.utils import data
+import transform
 
-class_names = np.array(['Outlier', 'Chimney', 'Shop', 'Sky', 'Roof',
-                        'Door', 'Balcony', 'Wall', 'Window'])
 # RGB color for each class
 colormap = [[0, 0, 0], [128, 128, 128], [0, 255, 0], [128, 255, 255], [0, 0, 255],
             [255, 128, 0], [128, 0, 255], [255, 255, 0], [255, 0, 0]]
@@ -25,6 +24,9 @@ def image2label(im):
     return np.array(colormap2label[idx], dtype='int64')  # 根据索引得到 label 矩阵
 
 class ECPDataset(data.Dataset):
+
+    class_names = np.array(['Outlier', 'Chimney', 'Shop', 'Sky', 'Roof',
+                            'Door', 'Balcony', 'Wall', 'Window'])
 
     mean_bgr = np.array([132.771101, 133.996078, 138.191973])
     std_bgr = np.array([67.851507, 66.293189, 66.143625])
@@ -54,20 +56,36 @@ class ECPDataset(data.Dataset):
         # load image
         img_file = data_file['img']
         img = PIL.Image.open(img_file).convert('RGB')
-        img = np.array(img, dtype=np.uint8)
         # load label
         lbl_file = data_file['lbl']
         lbl = PIL.Image.open(lbl_file).convert('RGB')
         lbl = image2label(lbl)
-        lbl = np.array(lbl, dtype=np.int32)
-        lbl[lbl == 255] = -1
-        # if self.train:
-        #     return self.transform(img, lbl)
-        # else:
-        #     return img, lbl
-        return self.transform(img, lbl)
+        # lbl = np.array(lbl, dtype=np.int32)
+        # lbl[lbl == 255] = -1
 
-    def transform(self, img, lbl):
+        if self.train:
+            return self.transform_train(img, lbl)
+        else:
+            return self.transform_test(img, lbl)
+        # return self.transform(img, lbl)
+
+    def transform_train(self, img, lbl):
+        lbl = PIL.Image.fromarray(lbl.astype('uint8'))
+        img, lbl = transform.RandomHorizontalFlip()(img,lbl)
+        img, lbl = transform.RandomCrop(100)(img, lbl)
+
+        img = np.array(img, dtype=np.uint8)
+        img = img[:, :, ::-1]  # RGB -> BGR
+        img = img.astype(np.float64)
+        img -= self.mean_bgr
+        img = img.transpose(2, 0, 1)
+        img = torch.from_numpy(img).float()
+        lbl = np.array(lbl, dtype=np.uint8)
+        lbl = torch.from_numpy(lbl).long()
+        return img, lbl
+
+    def transform_test(self, img, lbl):
+        img = np.array(img, dtype=np.uint8)
         img = img[:, :, ::-1]  # RGB -> BGR
         img = img.astype(np.float64)
         img -= self.mean_bgr
@@ -75,6 +93,7 @@ class ECPDataset(data.Dataset):
         img = torch.from_numpy(img).float()
         lbl = torch.from_numpy(lbl).long()
         return img, lbl
+
 
     def untransform(self, img, lbl):
         img = img.numpy()

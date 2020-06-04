@@ -12,7 +12,7 @@ import yaml
 
 import torchfcn
 import ECP_dataset
-
+import numpy as np
 
 def git_hash():
     cmd = 'git log -n 1 --pretty="%h"'
@@ -106,12 +106,11 @@ def main():
     dataset_test = torch.utils.data.Subset(dataset_test, indices[-20:])
 
     # define training and validation data loaders
-    loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=2, shuffle=True, **kwargs)
+    loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=50, shuffle=True, **kwargs)
     loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1, shuffle=False, **kwargs)
 
     # 2. model
-
-    model = torchfcn.models.FCN32s(n_class=21)
+    model = torchfcn.models.FCN32s(n_class=9)
     start_epoch = 0
     start_iteration = 0
     if args.resume:
@@ -130,8 +129,7 @@ def main():
     optim = torch.optim.SGD(
         [
             {'params': get_parameters(model, bias=False)},
-            {'params': get_parameters(model, bias=True),
-             'lr': args.lr * 2, 'weight_decay': 0},
+            {'params': get_parameters(model, bias=True),'lr': args.lr * 2, 'weight_decay': 0},
         ],
         lr=args.lr,
         momentum=args.momentum,

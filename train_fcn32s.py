@@ -63,7 +63,7 @@ def main():
         '--max-iteration', type=int, default=100000, help='max iteration'
     )
     parser.add_argument(
-        '--lr', type=float, default=1.0e-10, help='learning rate',
+        '--lr', type=float, default=1.0e-4, help='learning rate',
     )
     parser.add_argument(
         '--weight-decay', type=float, default=0.0005, help='weight decay',
@@ -105,7 +105,7 @@ def main():
     dataset_test = ECP_dataset.Subset(dataset_test, indices[-20:])
 
     # define training and validation data loaders
-    loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=2, shuffle=True, **kwargs)
+    loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=20, shuffle=True, **kwargs)
     loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1, shuffle=False, **kwargs)
 
     # 2. model
@@ -144,7 +144,7 @@ def main():
         val_loader=loader_test,
         out=args.out,
         max_iter=args.max_iteration,
-        interval_validate=40,
+        interval_validate=400,
     )
     trainer.epoch = start_epoch
     trainer.iteration = start_iteration

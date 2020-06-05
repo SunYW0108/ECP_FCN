@@ -12,7 +12,7 @@ import torchfcn
 
 from train_fcn32s import get_parameters
 from train_fcn32s import git_hash
-
+import ECP_dataset
 
 here = osp.dirname(osp.abspath(__file__))
 
@@ -63,19 +63,24 @@ def main():
 
     # 1. dataset
 
-    root = osp.expanduser('~/data/datasets')
+    root = osp.expanduser('~/facade_datasets/2.ECP')
     kwargs = {'num_workers': 4, 'pin_memory': True} if cuda else {}
-    train_loader = torch.utils.data.DataLoader(
-        torchfcn.datasets.SBDClassSeg(root, split='train', transform=True),
-        batch_size=1, shuffle=True, **kwargs)
-    val_loader = torch.utils.data.DataLoader(
-        torchfcn.datasets.VOC2011ClassSeg(
-            root, split='seg11valid', transform=True),
-        batch_size=1, shuffle=False, **kwargs)
+    # use our dataset and defined transformations
+    dataset_train = ECP_dataset.ECPDataset(root, train=True)
+    dataset_test = ECP_dataset.ECPDataset(root, train=False)
+
+    # split the dataset in train and test set
+    indices = torch.randperm(len(dataset_train)).tolist()
+    dataset_train = ECP_dataset.Subset(dataset_train, indices[:-20])
+    dataset_test = ECP_dataset.Subset(dataset_test, indices[-20:])
+
+    # define training and validation data loaders
+    loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=20, shuffle=True, **kwargs)
+    loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1, shuffle=False, **kwargs)
 
     # 2. model
 
-    model = torchfcn.models.FCN16s(n_class=21)
+    model = torchfcn.models.FCN16s(n_class=9)
     start_epoch = 0
     start_iteration = 0
     if args.resume:
@@ -112,11 +117,11 @@ def main():
         cuda=cuda,
         model=model,
         optimizer=optim,
-        train_loader=train_loader,
-        val_loader=val_loader,
+        train_loader=loader_train,
+        val_loader=loader_test,
         out=args.out,
         max_iter=args.max_iteration,
-        interval_validate=4000,
+        interval_validate=1000,
     )
     trainer.epoch = start_epoch
     trainer.iteration = start_iteration

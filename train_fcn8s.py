@@ -89,7 +89,7 @@ def main():
         start_epoch = checkpoint['epoch']
         start_iteration = checkpoint['iteration']
     else:
-        fcn16s = torchfcn.models.FCN16s()
+        fcn16s = torchfcn.models.FCN16s(n_class=9)
         state_dict = torch.load(args.pretrained_model)
         try:
             fcn16s.load_state_dict(state_dict)

@@ -33,6 +33,6 @@ git clone https://github.com/SunYW0108/ECP_FCN.git
 ./train_fcnXXs -g 0 --resume logs/XXX/checkpoint.pth.tar
 ```
 
-<img src=".readme/fcn8s_iter10000.jpg" width="50%" />
+<img src=".readme/iter100000.jpg" width="50%" />
 Visualization of validation result of FCN8s.
 

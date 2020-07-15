@@ -12,7 +12,7 @@ import torchfcn
 
 from train_fcn32s import get_parameters
 from train_fcn32s import git_hash
-import ECP_dataset
+import facade_dataset
 
 here = osp.dirname(osp.abspath(__file__))
 
@@ -61,16 +61,16 @@ def main():
     root = osp.expanduser('~/facade_datasets/2.ECP')
     kwargs = {'num_workers': 4, 'pin_memory': True} if cuda else {}
     # use our dataset and defined transformations
-    dataset_train = ECP_dataset.ECPDataset(root, train=True)
-    dataset_test = ECP_dataset.ECPDataset(root, train=False)
+    dataset_train = facade_dataset.ECPDataset(root, train=True)
+    dataset_test = facade_dataset.ECPDataset(root, train=False)
 
     # split the dataset in train and test set
     indices = torch.randperm(len(dataset_train)).tolist()
-    dataset_train = ECP_dataset.Subset(dataset_train, indices[:-20])
-    dataset_test = ECP_dataset.Subset(dataset_test, indices[-20:])
+    dataset_train = facade_dataset.Subset(dataset_train, indices[:-20])
+    dataset_test = facade_dataset.Subset(dataset_test, indices[-20:])
 
     # define training and validation data loaders
-    loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=16, shuffle=True, **kwargs)
+    loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=8, shuffle=True, **kwargs)
     loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1, shuffle=False, **kwargs)
 
     # 2. model

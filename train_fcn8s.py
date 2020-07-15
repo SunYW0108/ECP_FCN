@@ -121,7 +121,7 @@ def main():
         val_loader=loader_test,
         out=args.out,
         max_iter=args.max_iteration,
-        interval_validate=5000,
+        interval_validate=1000,
     )
     trainer.epoch = start_epoch
     trainer.iteration = start_iteration

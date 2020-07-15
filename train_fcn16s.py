@@ -63,20 +63,15 @@ def main():
 
     # 1. dataset
 
-    root = osp.expanduser('~/facade_datasets/2.ECP')
+    root = osp.expanduser('~/facades_datasets/5.ECP')
     kwargs = {'num_workers': 4, 'pin_memory': True} if cuda else {}
     # use our dataset and defined transformations
-    dataset_train = facade_dataset.ECPDataset(root, train=True)
-    dataset_test = facade_dataset.ECPDataset(root, train=False)
-
-    # split the dataset in train and test set
-    indices = torch.randperm(len(dataset_train)).tolist()
-    dataset_train = facade_dataset.Subset(dataset_train, indices[:-20])
-    dataset_test = facade_dataset.Subset(dataset_test, indices[-20:])
+    dataset_train = facade_dataset.ECP_Dataset(root, split='train')
+    dataset_val = facade_dataset.ECP_Dataset(root, split='val')
 
     # define training and validation data loaders
     loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=8, shuffle=True, **kwargs)
-    loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1, shuffle=False, **kwargs)
+    loader_val = torch.utils.data.DataLoader(dataset_val, batch_size=1, shuffle=False, **kwargs)
 
     # 2. model
 
@@ -118,7 +113,7 @@ def main():
         model=model,
         optimizer=optim,
         train_loader=loader_train,
-        val_loader=loader_test,
+        val_loader=loader_val,
         out=args.out,
         max_iter=args.max_iteration,
         interval_validate=5000,
